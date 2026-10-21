@@ -1,0 +1,19 @@
+# Direkte Abhaengigkeiten des Gateways.
+#
+# Die vollstaendige, hash-pinned Liste steht in requirements.txt. Sie wird
+# erzeugt mit:
+#
+#   pip-compile --generate-hashes --output-file=requirements.txt requirements.in
+#
+# und ist mit --require-hashes installierbar. Damit bekommen beide
+# Architekturen exakt dieselben Paketversionen - unabhaengig davon, was
+# PyPI zur Bauzeit sonst anbietet.
+#
+# Wichtig: fastmcp muss <3 bleiben. Das mcp-SDK 2.x verlangt in
+# ListToolsResult Felder (cacheScope/resultType/ttlMs), die die
+# handgeschriebenen Craft-Server nicht senden - mit 2.x liefert der
+# Gateway eine leere Werkzeugliste.
+
+fastmcp==2.14.7
+mcp==1.30.0
+uvicorn==0.54.0

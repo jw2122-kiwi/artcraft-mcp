@@ -1,0 +1,42 @@
+name: test
+
+# Baut das Image fuer beide Architekturen und prueft, dass der Gateway
+# antwortet, die Werkzeuge liefert und ein Dokument-Durchlauf klappt.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gateway
+          file: ./gateway/Dockerfile
+          platforms: ${{ matrix.platform }}
+          load: true
+          tags: artcraft-mcp:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: ./tests/smoke-test.sh artcraft-mcp:test ${{ matrix.platform }}

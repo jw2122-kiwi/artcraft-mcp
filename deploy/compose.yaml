@@ -1,0 +1,62 @@
+name: artcraft-mcp
+
+# Stack-Definition fuer den lokalen Betrieb.
+#
+# Wer das fertige Image nutzen will, nimmt statt des "build"-Abschnitts:
+#
+#   image: ghcr.io/jw2122-kiwi/artcraft-mcp:latest
+#
+# Der Build-Abschnitt bleibt als Alternative, wenn jemand das Image selbst
+# bauen will (z.B. mit einer anderen App-Auswahl).
+
+services:
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+      args:
+        # Welche Apps installiert werden. Kommaseparierte Liste aus:
+        #   wordcraft deckcraft gridcraft photocraft pdfcraft vectorcraft
+        #   lightcraft filmcraft designcraft effectcraft cadcraft soundcraft
+        #   figcraft
+        # "all" installiert die komplette Suite (13 Apps).
+        CRAFT_APPS: ${CRAFT_APPS:-all}
+    image: artcraft-mcp:local
+    pull_policy: build
+    container_name: artcraft-mcp
+    restart: unless-stopped
+    # Die UID/GID des Host-Users, damit die von den Apps erzeugten Dateien
+    # dem Host-User gehoeren. Die Werte kommen aus der .env (siehe .env.example).
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      # Nur lokal erreichbar. Fuer den Zugriff aus dem Netz Caddy eintragen
+      # (siehe ../docs/caddy.md).
+      - "127.0.0.1:8896:8000"
+    environment:
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - MCP_PATH=/mcp
+      - CRAFT_WORK_DIR=/work
+      # Optionales Passwort. Ist es gesetzt, verlangt der Gateway ein
+      # "Authorization: Bearer <secret>". Fuer den reinen lokalen Betrieb
+      # (127.0.0.1) kann die Variable leer bleiben.
+      - MCP_BEARER_TOKEN=${MCP_BEARER_TOKEN:-}
+    volumes:
+      # Arbeitsverzeichnis der Apps. Nur hier duerfen die Apps schreiben.
+      - ./work:/work
+    # Kein Host-Netzwerk, kein Docker-Socket, keine weiteren Mounts: fuer die
+    # Apps ohne eigene Confinement-Flags ist die Container-Grenze die einzige
+    # Schranke (siehe ../docs/security.md).
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - /app/healthcheck.py
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
