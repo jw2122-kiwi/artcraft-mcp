@@ -11,18 +11,21 @@ name: artcraft-mcp
 
 services:
   gateway:
-    build:
-      context: ../gateway
-      dockerfile: Dockerfile
-      args:
-        # Welche Apps installiert werden. Kommaseparierte Liste aus:
-        #   wordcraft deckcraft gridcraft photocraft pdfcraft vectorcraft
-        #   lightcraft filmcraft designcraft effectcraft cadcraft soundcraft
-        #   figcraft
-        # "all" installiert die komplette Suite (13 Apps).
-        CRAFT_APPS: ${CRAFT_APPS:-all}
-    image: artcraft-mcp:local
-    pull_policy: build
+    # Das veroeffentlichte Image. Es ist mehrsprachig (linux/amd64 und
+    # linux/arm64) und wird automatisch fuer die Host-Architektur gezogen.
+    #
+    # Wer das Image selbst bauen will (z.B. mit einer anderen App-Auswahl),
+    # ersetzt diesen Block durch:
+    #
+    #   build:
+    #     context: ../gateway
+    #     dockerfile: Dockerfile
+    #     args:
+    #       CRAFT_APPS: ${CRAFT_APPS:-all}
+    #   image: artcraft-mcp:local
+    #   pull_policy: build
+    image: ghcr.io/jw2122-kiwi/artcraft-mcp:latest
+    pull_policy: always
     container_name: artcraft-mcp
     restart: unless-stopped
     # Die UID/GID des Host-Users, damit die von den Apps erzeugten Dateien
