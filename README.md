@@ -203,12 +203,13 @@ pip-compile --generate-hashes --output-file=gateway/requirements.txt gateway/req
 
 | | |
 | --- | --- |
-| Compressed (pull size) | ~460 MB |
-| Uncompressed (on disk) | ~1.5 GB |
+| Pull size (compressed, `linux/arm64`) | ~460 MB |
+| Pull size (compressed, `linux/amd64`) | ~474 MB |
+| On disk (uncompressed, single arch) | ~1.5 GB |
 
 Most of it is the 13 statically linked Rust binaries (~733 MB) - they are
 already stripped and there is no smaller build upstream. The Python gateway
-is ~75 MB.
+is ~75 MB. The rest is the Debian base image with fonts.
 
 Alpine/musl is **not** possible: the Craft CLIs are built against glibc
 (GLIBC_2.35) and the suite publishes no musl builds.
