@@ -47,6 +47,11 @@ services:
     volumes:
       # Arbeitsverzeichnis der Apps. Nur hier duerfen die Apps schreiben.
       - ./work:/work
+    networks:
+      # Gemeinsames Netz mit anderen Stacks. Der hermes2-Agent erreicht den
+      # Gateway darueber als "artcraft-mcp:8000". Name und External-Flag
+      # kommen aus der .env (siehe .env.example).
+      - craft-net
     # Kein Host-Netzwerk, kein Docker-Socket, keine weiteren Mounts: fuer die
     # Apps ohne eigene Confinement-Flags ist die Container-Grenze die einzige
     # Schranke (siehe ../docs/security.md).
@@ -63,3 +68,13 @@ services:
       timeout: 15s
       retries: 3
       start_period: 30s
+
+networks:
+  # Standardmaessig legt der Stack sein eigenes Netz an (self-contained).
+  # Wer den Gateway in ein bestehendes Netz haengen will, setzt in der .env:
+  #   CRAFT_NETWORK=caddy-net
+  #   CRAFT_NETWORK_EXTERNAL=true
+  # Das Netz muss dann existieren, sonst startet der Stack nicht.
+  craft-net:
+    name: ${CRAFT_NETWORK:-craft-net}
+    external: ${CRAFT_NETWORK_EXTERNAL:-false}

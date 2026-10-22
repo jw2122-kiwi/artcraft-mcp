@@ -219,6 +219,34 @@ Alpine/musl is **not** possible: the Craft CLIs are built against glibc
 - `linux/amd64`
 - `linux/arm64`
 
+## Using it from an agent container
+
+An agent running in another container can drive the apps over a shared Docker
+network. Two things are needed:
+
+- the gateway joins that network (`CRAFT_NETWORK` / `CRAFT_NETWORK_EXTERNAL`
+  in `deploy/.env`),
+- a bearer token so that not every container on the network can use the
+  endpoint.
+
+Sharing the work directory as well lets the agent read back the documents it
+created. A full walkthrough - including the client configuration and a test
+run - is in [docs/agent-integration.md](docs/agent-integration.md).
+
+```yaml
+services:
+  gateway:
+    networks:
+      - craft-net
+    environment:
+      - MCP_BEARER_TOKEN=${MCP_BEARER_TOKEN}
+
+networks:
+  craft-net:
+    name: ${CRAFT_NETWORK:-craft-net}
+    external: ${CRAFT_NETWORK_EXTERNAL:-false}
+```
+
 ## License
 
 The gateway code in this repository is licensed under the
